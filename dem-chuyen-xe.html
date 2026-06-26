@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Đếm Chuyến Xe</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body {
+      min-height: 100vh;
+      background: linear-gradient(160deg, #0d1117 0%, #161b22 60%, #0d1117 100%);
+      font-family: -apple-system, 'Segoe UI', sans-serif;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+    }
+    .header {
+      width: 100%; background: rgba(255,255,255,0.04);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      padding: 14px 20px; display: flex;
+      justify-content: space-between; align-items: center;
+      position: sticky; top: 0; z-index: 10;
+    }
+    .header-title { font-size: 17px; font-weight: 700; }
+    .header-date { font-size: 12px; color: #aaa; margin-top: 2px; }
+    .body { width: 100%; max-width: 420px; margin: 0 auto; padding: 20px 20px 60px; }
+    .btn-small {
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 10px; color: #fff; padding: 8px 14px; font-size: 13px; cursor: pointer;
+    }
+    .btn-green {
+      background: linear-gradient(135deg, #00b894, #00cec9);
+      border: none; border-radius: 16px; color: #fff;
+      font-size: 20px; font-weight: 800; padding: 20px 48px;
+      cursor: pointer; box-shadow: 0 8px 24px rgba(0,184,148,0.4);
+      display: block; margin: 0 auto;
+    }
+    .btn-big {
+      width: 100%; background: linear-gradient(135deg, #fdcb6e, #e17055);
+      border: none; border-radius: 20px; color: #fff;
+      font-size: 22px; font-weight: 900; padding: 30px 0;
+      cursor: pointer; box-shadow: 0 10px 32px rgba(225,112,85,0.45);
+      letter-spacing: 1px;
+    }
+    .btn-ghost {
+      background: transparent; border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 12px; color: #aaa; font-size: 14px;
+      padding: 12px 20px; cursor: pointer; width: 100%; margin-top: 20px;
+    }
+    .btn-danger {
+      background: rgba(255,100,100,0.15); border: 1px solid rgba(255,100,100,0.3);
+      border-radius: 8px; color: #ff7675; font-size: 12px;
+      padding: 5px 12px; cursor: pointer; white-space: nowrap;
+    }
+    .btn-confirm-yes {
+      flex: 1; background: #d63031; border: none; border-radius: 10px;
+      color: #fff; padding: 12px; font-size: 14px; font-weight: 700; cursor: pointer;
+    }
+    .btn-confirm-no {
+      flex: 1; background: transparent; border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 10px; color: #aaa; padding: 12px; font-size: 14px; cursor: pointer;
+    }
+    .card {
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 14px; padding: 14px 16px;
+    }
+    .card-row { display: flex; justify-content: space-between; align-items: center; }
+    .so-chuyen { text-align: center; margin: 24px 0; }
+    .so-chuyen-label { font-size: 11px; color: #aaa; letter-spacing: 2px; margin-bottom: 4px; }
+    .so-chuyen-num {
+      font-size: 110px; font-weight: 900; line-height: 1;
+      color: #fdcb6e; text-shadow: 0 0 40px rgba(253,203,110,0.3);
+      display: inline-block; transition: transform 0.15s;
+    }
+    .so-chuyen-num.pulse { transform: scale(1.18); }
+    .tag {
+      background: rgba(0,206,201,0.12); border: 1px solid rgba(0,206,201,0.25);
+      border-radius: 8px; padding: 3px 10px; font-size: 12px;
+      color: #00cec9; display: inline-block;
+    }
+    .tags-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+    .confirm-box { margin-top: 20px; }
+    .confirm-box p { text-align: center; margin-bottom: 12px; font-size: 14px; }
+    .confirm-btns { display: flex; gap: 10px; }
+    .hist-card {
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; cursor: pointer;
+    }
+    .hist-summary { display: flex; justify-content: space-between; align-items: center; }
+    .hist-ngay { font-weight: 700; font-size: 15px; }
+    .hist-time { font-size: 12px; color: #aaa; margin-top: 3px; }
+    .hist-count { font-size: 38px; font-weight: 900; color: #00cec9; line-height: 1; text-align: right; }
+    .hist-count-label { font-size: 11px; color: #aaa; }
+    .hist-arrow { font-size: 18px; color: #aaa; display: inline-block; transition: transform 0.2s; margin-left: 10px; }
+    .hist-arrow.open { transform: rotate(180deg); }
+    .hist-detail { margin-top: 14px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px; display: none; }
+    .hist-detail.open { display: block; }
+    .detail-label { font-size: 11px; color: #888; letter-spacing: 1px; margin-bottom: 10px; }
+    .detail-item {
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(0,206,201,0.07); border: 1px solid rgba(0,206,201,0.15);
+      border-radius: 10px; padding: 8px 12px; margin-bottom: 6px;
+    }
+    .detail-num {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: rgba(0,206,201,0.2); display: flex; align-items: center;
+      justify-content: center; font-size: 12px; font-weight: 800;
+      color: #00cec9; flex-shrink: 0;
+    }
+    .detail-time { font-size: 15px; font-weight: 700; }
+    .detail-diff { font-size: 11px; color: #aaa; margin-top: 2px; }
+    .empty { text-align: center; color: #aaa; margin-top: 40px; font-size: 14px; }
+    .center { text-align: center; margin-top: 60px; }
+    .center h2 { font-size: 20px; font-weight: 600; margin-bottom: 6px; }
+    .center p { font-size: 14px; color: #aaa; margin-bottom: 44px; }
+    .emoji-big { font-size: 64px; margin-bottom: 12px; }
+    .kip-info { font-size: 13px; color: #aaa; }
+    .kip-info b { color: #fff; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">🪵 Đếm Chuyến Xe</div>
+    <div class="header-date" id="header-date"></div>
+  </div>
+  <button class="btn-small" id="btn-toggle-history">📋 Lịch sử</button>
+</div>
+
+<!-- MÀN HÌNH LÁI XE -->
+<div id="screen-xe" class="body">
+  <div id="view-chua-kip" class="center">
+    <div class="emoji-big">🚛</div>
+    <h2>Chưa có kíp nào</h2>
+    <p>Bấm bắt đầu khi bắt đầu kíp làm việc</p>
+    <button class="btn-green" id="btn-bat-dau">▶ Bắt Đầu Kíp</button>
+  </div>
+
+  <div id="view-trong-kip" class="hidden">
+    <div class="card" style="margin-bottom:20px">
+      <span class="kip-info">🕐 Bắt đầu: <b id="kip-bat-dau-text"></b></span>
+    </div>
+    <div class="so-chuyen">
+      <div class="so-chuyen-label">SỐ CHUYẾN</div>
+      <span class="so-chuyen-num" id="so-chuyen-num">0</span>
+    </div>
+    <button class="btn-big" id="btn-them-chuyen">+ THÊM CHUYẾN</button>
+    <div class="card card-row hidden" id="chuyen-cuoi-box" style="margin-top:14px">
+      <span class="kip-info">Chuyến cuối <b id="chuyen-cuoi-gio"></b></span>
+      <button class="btn-danger" id="btn-nham">↩ Nhầm</button>
+    </div>
+    <div class="card hidden" id="chi-tiet-box" style="margin-top:12px;max-height:130px;overflow-y:auto">
+      <div style="font-size:11px;color:#888;letter-spacing:1px;margin-bottom:8px">CHI TIẾT</div>
+      <div class="tags-wrap" id="chi-tiet-tags"></div>
+    </div>
+    <button class="btn-ghost" id="btn-ket-thuc">⏹ Kết Thúc Kíp</button>
+    <div class="card confirm-box hidden" id="confirm-box">
+      <p>Kết thúc kíp với <b id="confirm-so" style="color:#fdcb6e"></b> chuyến?</p>
+      <div class="confirm-btns">
+        <button class="btn-confirm-no" id="btn-huy">Huỷ</button>
+        <button class="btn-confirm-yes" id="btn-xac-nhan">✅ Xác nhận</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MÀN HÌNH LỊCH SỬ -->
+<div id="screen-history" class="body hidden">
+  <div style="font-size:16px;font-weight:700;margin-bottom:16px">📋 Lịch sử các kíp</div>
+  <div id="history-list"></div>
+</div>
+
+<script>
+(function() {
+  var kip = null;
+  var lichSu = [];
+  var showingHistory = false;
+  var expandedIdx = null;
+
+  // --- STORAGE AN TOÀN ---
+  function luu(key, val) {
+    try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {}
+  }
+  function doc(key) {
+    try {
+      var v = localStorage.getItem(key);
+      return v ? JSON.parse(v) : null;
+    } catch(e) { return null; }
+  }
+
+  function khoiDong() {
+    var k = doc("kip");
+    if (k && !k.ketThuc) kip = k;
+    lichSu = doc("lichSu") || [];
+  }
+
+  // --- HELPERS ---
+  function getNow() {
+    var d = new Date();
+    var h = d.getHours().toString().padStart(2,"0");
+    var m = d.getMinutes().toString().padStart(2,"0");
+    return h + ":" + m;
+  }
+  function getToday() {
+    var d = new Date();
+    return d.getDate() + "/" + (d.getMonth()+1) + "/" + d.getFullYear();
+  }
+  function diffPhut(t1, t2) {
+    var a = t1.split(":"), b = t2.split(":");
+    return (parseInt(b[0])*60 + parseInt(b[1])) - (parseInt(a[0])*60 + parseInt(a[1]));
+  }
+
+  // --- ACTIONS ---
+  function batDauKip() {
+    kip = { ngay: getToday(), batDau: getNow(), chuyen: [] };
+    luu("kip", kip);
+    veXe();
+  }
+
+  function themChuyen() {
+    kip.chuyen.push(getNow());
+    luu("kip", kip);
+    var el = document.getElementById("so-chuyen-num");
+    el.classList.add("pulse");
+    setTimeout(function(){ el.classList.remove("pulse"); }, 250);
+    veXe();
+  }
+
+  function xoaNham() {
+    if (!kip || kip.chuyen.length === 0) return;
+    kip.chuyen.pop();
+    luu("kip", kip);
+    veXe();
+  }
+
+  function ketThuc() {
+    kip.ketThuc = getNow();
+    lichSu.unshift(kip);
+    if (lichSu.length > 30) lichSu = lichSu.slice(0, 30);
+    luu("lichSu", lichSu);
+    kip = null;
+    luu("kip", null);
+    document.getElementById("confirm-box").classList.add("hidden");
+    veXe();
+  }
+
+  // --- RENDER ---
+  function veXe() {
+    if (!kip) {
+      document.getElementById("view-chua-kip").classList.remove("hidden");
+      document.getElementById("view-trong-kip").classList.add("hidden");
+    } else {
+      document.getElementById("view-chua-kip").classList.add("hidden");
+      document.getElementById("view-trong-kip").classList.remove("hidden");
+      document.getElementById("kip-bat-dau-text").textContent = kip.batDau;
+      document.getElementById("so-chuyen-num").textContent = kip.chuyen.length;
+
+      var cuoiBox = document.getElementById("chuyen-cuoi-box");
+      var chiTietBox = document.getElementById("chi-tiet-box");
+
+      if (kip.chuyen.length > 0) {
+        cuoiBox.classList.remove("hidden");
+        document.getElementById("chuyen-cuoi-gio").textContent = kip.chuyen[kip.chuyen.length-1];
+        chiTietBox.classList.remove("hidden");
+        document.getElementById("chi-tiet-tags").innerHTML = kip.chuyen.map(function(t,i){
+          return '<span class="tag">#'+(i+1)+' '+t+'</span>';
+        }).join("");
+      } else {
+        cuoiBox.classList.add("hidden");
+        chiTietBox.classList.add("hidden");
+      }
+    }
+  }
+
+  function veLichSu() {
+    var el = document.getElementById("history-list");
+    if (lichSu.length === 0) {
+      el.innerHTML = '<div class="empty">Chưa có kíp nào hoàn thành</div>';
+      return;
+    }
+    el.innerHTML = lichSu.map(function(k, i) {
+      var chi = k.chuyen.map(function(t, j) {
+        var diff = "";
+        if (j > 0) {
+          var d = diffPhut(k.chuyen[j-1], t);
+          if (d > 0) diff = '<div class="detail-diff">+'+d+' phút từ chuyến trước</div>';
+        }
+        return '<div class="detail-item">'
+          +'<div class="detail-num">'+(j+1)+'</div>'
+          +'<div><div class="detail-time">🕐 '+t+'</div>'+diff+'</div>'
+          +'</div>';
+      }).join("");
+
+      return '<div class="hist-card" id="hcard-'+i+'">'
+        +'<div class="hist-summary">'
+        +'<div><div class="hist-ngay">📅 '+k.ngay+'</div>'
+        +'<div class="hist-time">🕐 '+k.batDau+' → '+(k.ketThuc||'?')+'</div></div>'
+        +'<div style="display:flex;align-items:center">'
+        +'<div><div class="hist-count">'+k.chuyen.length+'</div><div class="hist-count-label">chuyến</div></div>'
+        +'<span class="hist-arrow" id="harrow-'+i+'">⌄</span>'
+        +'</div></div>'
+        +'<div class="hist-detail" id="hdetail-'+i+'">'
+        +'<div class="detail-label">CHI TIẾT TỪNG CHUYẾN</div>'
+        +chi+'</div></div>';
+    }).join("");
+
+    lichSu.forEach(function(k, i) {
+      document.getElementById("hcard-"+i).addEventListener("click", function(){
+        moRong(i);
+      });
+    });
+  }
+
+  function moRong(i) {
+    if (expandedIdx !== null && expandedIdx !== i) {
+      var pd = document.getElementById("hdetail-"+expandedIdx);
+      var pa = document.getElementById("harrow-"+expandedIdx);
+      if (pd) pd.classList.remove("open");
+      if (pa) pa.classList.remove("open");
+    }
+    var det = document.getElementById("hdetail-"+i);
+    var arr = document.getElementById("harrow-"+i);
+    if (expandedIdx === i) {
+      det.classList.remove("open");
+      arr.classList.remove("open");
+      expandedIdx = null;
+    } else {
+      det.classList.add("open");
+      arr.classList.add("open");
+      expandedIdx = i;
+    }
+  }
+
+  function toggleHistory() {
+    showingHistory = !showingHistory;
+    var btn = document.getElementById("btn-toggle-history");
+    if (showingHistory) {
+      document.getElementById("screen-xe").classList.add("hidden");
+      document.getElementById("screen-history").classList.remove("hidden");
+      btn.textContent = "← Đóng";
+      expandedIdx = null;
+      veLichSu();
+    } else {
+      document.getElementById("screen-xe").classList.remove("hidden");
+      document.getElementById("screen-history").classList.add("hidden");
+      btn.textContent = "📋 Lịch sử";
+    }
+  }
+
+  // --- GẮN SỰ KIỆN ---
+  document.getElementById("header-date").textContent = getToday();
+  document.getElementById("btn-toggle-history").addEventListener("click", toggleHistory);
+  document.getElementById("btn-bat-dau").addEventListener("click", batDauKip);
+  document.getElementById("btn-them-chuyen").addEventListener("click", themChuyen);
+  document.getElementById("btn-nham").addEventListener("click", xoaNham);
+  document.getElementById("btn-ket-thuc").addEventListener("click", function(){
+    document.getElementById("confirm-so").textContent = kip.chuyen.length;
+    document.getElementById("confirm-box").classList.remove("hidden");
+  });
+  document.getElementById("btn-huy").addEventListener("click", function(){
+    document.getElementById("confirm-box").classList.add("hidden");
+  });
+  document.getElementById("btn-xac-nhan").addEventListener("click", ketThuc);
+
+  // --- KHỞI ĐỘNG ---
+  khoiDong();
+  veXe();
+})();
+</script>
+</body>
+</html>
