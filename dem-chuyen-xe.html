@@ -7,7 +7,21 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Đếm Chuyến Xe</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    * {
+      box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent;
+      -webkit-user-select: none; -moz-user-select: none; user-select: none;
+      -webkit-touch-callout: none;
+    }
+    button { touch-action: manipulation; }
+    input, textarea {
+      -webkit-user-select: text; -moz-user-select: text; user-select: text;
+    }
+    .tinh-input {
+      width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 10px; color: #fff; padding: 14px; font-size: 24px; font-weight: 700;
+      text-align: center;
+    }
+    .tinh-input:focus { outline: none; border-color: #00cec9; }
     body {
       min-height: 100vh;
       background: linear-gradient(160deg, #0d1117 0%, #161b22 60%, #0d1117 100%);
@@ -75,14 +89,14 @@
       display: inline-block; transition: transform 0.15s;
     }
     .so-chuyen-num.pulse { transform: scale(1.18); }
+    #chi-tiet-box { contain: content; -webkit-overflow-scrolling: touch; }
+    #chi-tiet-tags { contain: layout; }
     .tag {
       background: rgba(0,206,201,0.12); border: 1px solid rgba(0,206,201,0.25);
       border-radius: 8px; padding: 3px 10px; font-size: 12px;
       color: #00cec9; display: inline-block;
     }
     .tags-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
-    .confirm-box { margin-top: 20px; }
-    .confirm-box p { text-align: center; margin-bottom: 12px; font-size: 14px; }
     .confirm-btns { display: flex; gap: 10px; }
 
     /* --- LỊCH SỬ: SWIPE-TO-DELETE --- */
@@ -200,7 +214,10 @@
     <div class="header-title">🪵 Đếm Chuyến Xe</div>
     <div class="header-date" id="header-date"></div>
   </div>
-  <button class="btn-small" id="btn-toggle-history">📋 Lịch sử</button>
+  <div style="display:flex; gap:8px">
+    <button class="btn-small hidden" id="btn-toggle-tinh-tien">🧮 Tính tiền</button>
+    <button class="btn-small" id="btn-toggle-history">📋 Lịch sử</button>
+  </div>
 </div>
 
 <!-- MÀN HÌNH LÁI XE -->
@@ -230,22 +247,23 @@
       <span class="kip-info">Chuyến cuối <b id="chuyen-cuoi-gio"></b></span>
       <button class="btn-danger" id="btn-nham">↩ Nhầm</button>
     </div>
-    <div class="card hidden" id="tien-box" style="margin-top:12px">
-      <div style="font-size:11px;color:#888;letter-spacing:1px;margin-bottom:8px">TIỀN TẠM TÍNH</div>
-      <div id="tien-breakdown"></div>
-      <div class="tien-tong-row"><span>Tổng cộng</span><b id="tien-tong">0đ</b></div>
-    </div>
     <div class="card hidden" id="chi-tiet-box" style="margin-top:12px;max-height:130px;overflow-y:auto">
       <div style="font-size:11px;color:#888;letter-spacing:1px;margin-bottom:8px">CHI TIẾT</div>
       <div class="tags-wrap" id="chi-tiet-tags"></div>
     </div>
     <button class="btn-ghost" id="btn-ket-thuc">⏹ Kết Thúc Kíp</button>
-    <div class="card confirm-box hidden" id="confirm-box">
-      <p>Kết thúc kíp với <b id="confirm-so" style="color:#fdcb6e"></b> chuyến, tổng <b id="confirm-tien" style="color:#00e5c9"></b>?</p>
-      <div class="confirm-btns">
-        <button class="btn-confirm-no" id="btn-huy">Huỷ</button>
-        <button class="btn-confirm-yes" id="btn-xac-nhan">✅ Xác nhận</button>
-      </div>
+  </div>
+</div>
+
+<!-- MODAL XÁC NHẬN KẾT THÚC KÍP -->
+<div class="modal-overlay hidden" id="confirm-box">
+  <div class="modal-box">
+    <div class="modal-icon">⏹️</div>
+    <p>Kết thúc kíp với <b id="confirm-so" style="color:#fdcb6e"></b> chuyến?</p>
+    <div class="modal-sub">Kíp sẽ được lưu vào lịch sử.</div>
+    <div class="confirm-btns">
+      <button class="btn-confirm-no" id="btn-huy">Huỷ</button>
+      <button class="btn-confirm-yes" id="btn-xac-nhan">✅ Xác nhận</button>
     </div>
   </div>
 </div>
@@ -254,6 +272,41 @@
 <div id="screen-history" class="body hidden">
   <div style="font-size:16px;font-weight:700;margin-bottom:16px">📋 Lịch sử các kíp</div>
   <div id="history-list"></div>
+</div>
+
+<!-- MÀN HÌNH TÍNH TIỀN -->
+<div id="screen-tinh-tien" class="body hidden">
+  <div style="font-size:16px;font-weight:700;margin-bottom:16px">🧮 Tính tiền theo số chuyến</div>
+  <div class="loai-tabs" id="tinh-loai-tabs">
+    <button class="loai-tab" data-loai="xalan"><span class="loai-emoji">⛴</span>Xà Lan</button>
+    <button class="loai-tab" data-loai="ben1"><span class="loai-emoji">🚢</span>Bến 1</button>
+    <button class="loai-tab" data-loai="cau7"><span class="loai-emoji">🌉</span>Cầu 7</button>
+  </div>
+  <div class="card" style="margin-bottom:12px">
+    <div style="font-size:11px;color:#888;letter-spacing:1px;margin-bottom:10px">SỐ CHUYẾN (theo công ty chấm)</div>
+    <input type="number" inputmode="numeric" pattern="[0-9]*" min="0" id="tinh-input" class="tinh-input" placeholder="Nhập số chuyến...">
+  </div>
+  <div class="card hidden" id="tinh-ket-qua-box" style="margin-bottom:16px">
+    <div class="tien-row"><span>Tổng số chuyến</span><span class="tien-so" id="tinh-tong-chuyen">0</span></div>
+    <div class="tien-row"><span>Mốc miễn phí</span><span class="tien-so" id="tinh-moc">0</span></div>
+    <div class="tien-row"><span>Số chuyến ăn tiền</span><span class="tien-so" id="tinh-an-tien">0</span></div>
+    <div class="tien-tong-row"><span>Thành tiền</span><b id="tinh-thanh-tien">0đ</b></div>
+    <button class="btn-ghost" id="btn-tinh-cong" style="margin-top:14px">+ Cộng vào tổng</button>
+  </div>
+
+  <div id="tinh-ds-box" class="hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div style="font-size:11px;color:#888;letter-spacing:1px">ĐÃ CỘNG</div>
+      <button class="btn-danger" id="btn-tinh-xoa-tat-ca">Xoá tất cả</button>
+    </div>
+    <div id="tinh-ds-list"></div>
+    <div class="card" style="margin-top:4px">
+      <div class="card-row">
+        <span style="font-size:14px;font-weight:700">TỔNG CỘNG</span>
+        <b id="tinh-tong-cong" style="color:#00e5c9;font-size:22px">0đ</b>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- MODAL XÁC NHẬN XOÁ KÍP -->
@@ -273,7 +326,6 @@
 (function() {
   var kip = null;
   var lichSu = [];
-  var showingHistory = false;
   var expandedIdx = null;
 
   // --- SWIPE-TO-DELETE STATE ---
@@ -298,15 +350,6 @@
     return n.toLocaleString("vi-VN") + "đ";
   }
 
-  function demTheoLoai(chuyenArr) {
-    var dem = {};
-    chuyenArr.forEach(function(c) {
-      var loai = getLoai(c);
-      dem[loai] = (dem[loai] || 0) + 1;
-    });
-    return dem;
-  }
-
   function tienCuaLoai(soChuyen, loaiKey) {
     var info = LOAI_INFO[loaiKey];
     if (!info) return 0;
@@ -314,36 +357,8 @@
     return soChuyenAnTien * info.donGia;
   }
 
-  function tinhTongTien(chuyenArr) {
-    var dem = demTheoLoai(chuyenArr);
-    var tong = 0;
-    Object.keys(dem).forEach(function(loai) {
-      tong += tienCuaLoai(dem[loai], loai);
-    });
-    return tong;
-  }
-
   function formatSo(n) {
     return n.toLocaleString("vi-VN");
-  }
-
-  function buildTienRow(loai, soCT, dangChay) {
-    var info = LOAI_INFO[loai];
-    var soChuyenAnTien = Math.max(0, soCT - info.moc);
-    var tien = soChuyenAnTien * info.donGia;
-    var phai;
-    if (soChuyenAnTien > 0) {
-      phai = '<span class="tien-so">'+soChuyenAnTien+'x'+formatSo(info.donGia)+'='+formatSo(tien)+'đ</span>';
-    } else if (info.moc > 0) {
-      var ghiChu = dangChay
-        ? 'còn '+(info.moc - soCT + 1)+' chuyến nữa mới đạt mốc (chuyến '+(info.moc+1)+')'
-        : 'chưa đạt mốc chuyến '+(info.moc+1);
-      phai = '<span class="tien-so">0đ</span><span class="tien-moc">'+ghiChu+'</span>';
-    } else {
-      phai = '<span class="tien-so">'+soCT+'x'+formatSo(info.donGia)+'='+formatSo(tien)+'đ</span>';
-    }
-    return '<div class="tien-row"><span>'+info.icon+' '+info.ten+' ('+soCT+' chuyến)</span>'
-      +'<span style="text-align:right">'+phai+'</span></div>';
   }
 
   // --- STORAGE AN TOÀN ---
@@ -386,14 +401,44 @@
     veXe();
   }
 
-  function themChuyen() {
-    var loai = kip.loaiHienTai || "xalan";
-    kip.chuyen.push({ gio: getNow(), loai: loai });
-    luu("kip", kip);
+  var pulseTimer = null;
+  function pulseNumber() {
     var el = document.getElementById("so-chuyen-num");
+    el.classList.remove("pulse");
+    void el.offsetWidth; // ép reflow để animation luôn chạy lại được, kể cả bấm rất nhanh
     el.classList.add("pulse");
-    setTimeout(function(){ el.classList.remove("pulse"); }, 250);
-    veXe();
+    clearTimeout(pulseTimer);
+    pulseTimer = setTimeout(function(){ el.classList.remove("pulse"); }, 250);
+  }
+
+  var themChuyenDangXuLy = false;
+  function themChuyen() {
+    if (themChuyenDangXuLy) return; // chặn bấm chồng/giật do tap kép trên di động
+    themChuyenDangXuLy = true;
+    requestAnimationFrame(function(){ themChuyenDangXuLy = false; });
+
+    var loai = kip.loaiHienTai || "xalan";
+    var c = { gio: getNow(), loai: loai };
+    kip.chuyen.push(c);
+    luu("kip", kip);
+    pulseNumber();
+
+    if (kip.chuyen.length === 1) {
+      // lần đầu tiên có chuyến: cần hiện các khối đang ẩn -> vẽ lại toàn bộ 1 lần
+      veXe();
+      return;
+    }
+
+    // các lần sau: chỉ cập nhật phần thay đổi, KHÔNG build lại toàn bộ danh sách thẻ/tiền
+    document.getElementById("so-chuyen-num").textContent = kip.chuyen.length;
+    document.getElementById("chuyen-cuoi-gio").textContent = LOAI_INFO[loai].icon + " " + getGio(c);
+
+    var tagEl = document.createElement("span");
+    tagEl.className = "tag";
+    tagEl.textContent = LOAI_INFO[loai].icon + " #" + kip.chuyen.length + " " + getGio(c);
+    var tagsWrap = document.getElementById("chi-tiet-tags");
+    tagsWrap.appendChild(tagEl);
+    tagsWrap.parentElement.scrollTop = tagsWrap.parentElement.scrollHeight;
   }
 
   function xoaNham() {
@@ -425,13 +470,12 @@
       document.getElementById("kip-bat-dau-text").textContent = kip.batDau;
       document.getElementById("so-chuyen-num").textContent = kip.chuyen.length;
 
-      document.querySelectorAll(".loai-tab").forEach(function(btn){
+      document.querySelectorAll("#loai-tabs .loai-tab").forEach(function(btn){
         btn.classList.toggle("active", (kip.loaiHienTai || "xalan") === btn.getAttribute("data-loai"));
       });
 
       var cuoiBox = document.getElementById("chuyen-cuoi-box");
       var chiTietBox = document.getElementById("chi-tiet-box");
-      var tienBox = document.getElementById("tien-box");
 
       if (kip.chuyen.length > 0) {
         cuoiBox.classList.remove("hidden");
@@ -441,19 +485,9 @@
         document.getElementById("chi-tiet-tags").innerHTML = kip.chuyen.map(function(c,i){
           return '<span class="tag">'+LOAI_INFO[getLoai(c)].icon+' #'+(i+1)+' '+getGio(c)+'</span>';
         }).join("");
-
-        tienBox.classList.remove("hidden");
-        var dem = demTheoLoai(kip.chuyen);
-        var rows = "";
-        Object.keys(dem).forEach(function(loai){
-          rows += buildTienRow(loai, dem[loai], true);
-        });
-        document.getElementById("tien-breakdown").innerHTML = rows;
-        document.getElementById("tien-tong").textContent = formatTien(tinhTongTien(kip.chuyen));
       } else {
         cuoiBox.classList.add("hidden");
         chiTietBox.classList.add("hidden");
-        tienBox.classList.add("hidden");
       }
     }
   }
@@ -480,13 +514,6 @@
           +'</div>';
       }).join("");
 
-      var dem = demTheoLoai(k.chuyen);
-      var tienRows = "";
-      Object.keys(dem).forEach(function(loai){
-        tienRows += buildTienRow(loai, dem[loai], false);
-      });
-      var tongTien = tinhTongTien(k.chuyen);
-
       return '<div class="hist-wrap">'
         +'<div class="hist-delete-bg">'
         +'<button class="hist-delete-btn" id="hdel-'+i+'"><span class="icon">🗑</span></button>'
@@ -494,17 +521,12 @@
         +'<div class="hist-card" id="hcard-'+i+'">'
         +'<div class="hist-summary">'
         +'<div><div class="hist-ngay">📅 '+k.ngay+'</div>'
-        +'<div class="hist-time">🕐 '+k.batDau+' → '+(k.ketThuc||'?')+'</div>'
-        +'<div class="hist-tien">💰 '+formatTien(tongTien)+'</div></div>'
+        +'<div class="hist-time">🕐 '+k.batDau+' → '+(k.ketThuc||'?')+'</div></div>'
         +'<div style="display:flex;align-items:center">'
         +'<div><div class="hist-count">'+k.chuyen.length+'</div><div class="hist-count-label">chuyến</div></div>'
         +'<span class="hist-arrow" id="harrow-'+i+'">⌄</span>'
         +'</div></div>'
         +'<div class="hist-detail" id="hdetail-'+i+'">'
-        +'<div class="detail-tien-box">'
-        +'<div class="detail-label">TIỀN THEO NƠI CHẠY</div>'
-        +tienRows
-        +'</div>'
         +'<div class="detail-label">CHI TIẾT TỪNG CHUYẾN</div>'
         +chi+'</div></div></div>';
     }).join("");
@@ -539,57 +561,70 @@
   }
 
   // --- SWIPE-TO-DELETE LOGIC ---
+  var swipeActive = null; // { card, i, startX, current, moved }
+
+  function swipeSetTranslate(state, x, animate) {
+    state.card.style.transition = animate ? "transform 0.22s cubic-bezier(0.22, 1, 0.36, 1)" : "none";
+    state.card.style.transform = "translateX(" + x + "px)";
+    state.current = x;
+  }
+
+  function swipePointX(e) {
+    if (e.touches && e.touches.length) return e.touches[0].clientX;
+    if (e.changedTouches && e.changedTouches.length) return e.changedTouches[0].clientX;
+    return e.clientX;
+  }
+
+  function swipeHandleMove(clientX) {
+    if (!swipeActive) return;
+    var dx = clientX - swipeActive.startX;
+    if (Math.abs(dx) > 6) swipeActive.moved = true;
+    var next = dx;
+    if (next > 0) next = 0;
+    if (next < -SWIPE_WIDTH) next = -SWIPE_WIDTH + (next + SWIPE_WIDTH) * 0.15;
+    swipeSetTranslate(swipeActive, next, false);
+  }
+
+  function swipeHandleUp() {
+    if (!swipeActive) return;
+    var state = swipeActive;
+    var shouldDelete = state.current < -SWIPE_WIDTH / 2;
+    swipeSetTranslate(state, 0, true);
+    swipeActive = null;
+    if (state.onDone) state.onDone(shouldDelete, state.moved);
+  }
+
+  // Gắn 1 LẦN DUY NHẤT lúc khởi động — trước đây bị gắn lại mỗi lần vẽ danh sách
+  // lịch sử nên dồn listener theo thời gian, gây phản hồi sai / phải bấm 2 lần.
+  document.addEventListener("mousemove", function(e){ swipeHandleMove(swipePointX(e)); });
+  document.addEventListener("mouseup", swipeHandleUp);
+
   function attachSwipe(i) {
     var card = document.getElementById("hcard-"+i);
     if (!card) return;
-    var startX = 0, current = 0, dragging = false, moved = false;
-
-    function setTranslate(x, animate) {
-      card.style.transition = animate ? "transform 0.22s cubic-bezier(0.22, 1, 0.36, 1)" : "none";
-      card.style.transform = "translateX(" + x + "px)";
-      current = x;
-    }
-
-    function pointX(e) {
-      if (e.touches && e.touches.length) return e.touches[0].clientX;
-      if (e.changedTouches && e.changedTouches.length) return e.changedTouches[0].clientX;
-      return e.clientX;
-    }
+    var moved = false;
 
     function onDown(e) {
-      if (expandedIdx === i) { dragging = false; return; } // đang xem chi tiết: không cho vuốt xoá
-      dragging = true;
+      if (expandedIdx === i) return; // đang xem chi tiết: không cho vuốt xoá
       moved = false;
-      startX = pointX(e);
+      swipeActive = {
+        card: card, i: i, startX: swipePointX(e), current: 0, moved: false,
+        onDone: function(shouldDelete, wasMoved) {
+          if (wasMoved) moved = true; // đánh dấu để click phía sau không mở/đóng chi tiết
+          if (shouldDelete) requestDelete(i); // vuốt hết cỡ = tương đương bấm nút xoá
+        }
+      };
       card.style.transition = "none";
     }
 
-    function onMove(e) {
-      if (!dragging) return;
-      var dx = pointX(e) - startX;
-      if (Math.abs(dx) > 6) moved = true;
-      var next = dx;
-      if (next > 0) next = 0;
-      if (next < -SWIPE_WIDTH) next = -SWIPE_WIDTH + (next + SWIPE_WIDTH) * 0.15;
-      setTranslate(next, false);
-    }
-
-    function onUp() {
-      if (!dragging) return;
-      dragging = false;
-      var shouldDelete = current < -SWIPE_WIDTH / 2;
-      setTranslate(0, true);
-      if (shouldDelete) requestDelete(i); // vuốt hết cỡ = tương đương bấm nút xoá
-    }
+    function onTouchMove(e) { swipeHandleMove(swipePointX(e)); }
+    function onTouchUp() { swipeHandleUp(); }
 
     card.addEventListener("touchstart", onDown, { passive: true });
-    card.addEventListener("touchmove", onMove, { passive: true });
-    card.addEventListener("touchend", onUp);
-    card.addEventListener("touchcancel", onUp);
-
+    card.addEventListener("touchmove", onTouchMove, { passive: true });
+    card.addEventListener("touchend", onTouchUp);
+    card.addEventListener("touchcancel", onTouchUp);
     card.addEventListener("mousedown", onDown);
-    document.addEventListener("mousemove", onMove);
-    document.addEventListener("mouseup", onUp);
 
     card.addEventListener("click", function() {
       if (moved) { moved = false; return; }
@@ -616,28 +651,143 @@
     veLichSu();
   }
 
-  function toggleHistory() {
-    showingHistory = !showingHistory;
-    var btn = document.getElementById("btn-toggle-history");
-    if (showingHistory) {
-      document.getElementById("screen-xe").classList.add("hidden");
-      document.getElementById("screen-history").classList.remove("hidden");
-      btn.textContent = "← Đóng";
+  var currentScreen = "xe"; // "xe" | "history" | "tinhTien"
+
+  function showScreen(name) {
+    document.getElementById("screen-xe").classList.toggle("hidden", name !== "xe");
+    document.getElementById("screen-history").classList.toggle("hidden", name !== "history");
+    document.getElementById("screen-tinh-tien").classList.toggle("hidden", name !== "tinhTien");
+    currentScreen = name;
+
+    var btnHistory = document.getElementById("btn-toggle-history");
+    var btnTinh = document.getElementById("btn-toggle-tinh-tien");
+
+    if (name === "xe") {
+      btnHistory.textContent = "📋 Lịch sử";
+      btnHistory.classList.remove("hidden");
+      btnTinh.classList.add("hidden");
+    } else if (name === "history") {
+      btnHistory.textContent = "← Đóng";
+      btnHistory.classList.remove("hidden");
+      btnTinh.textContent = "🧮 Tính tiền";
+      btnTinh.classList.remove("hidden");
+    } else if (name === "tinhTien") {
+      btnHistory.classList.add("hidden"); // chỉ để lại đúng 1 nút Đóng ở màn Tính tiền
+      btnTinh.textContent = "← Đóng";
+      btnTinh.classList.remove("hidden");
+    }
+
+    if (name === "history") {
       expandedIdx = null;
       veLichSu();
-    } else {
-      document.getElementById("screen-xe").classList.remove("hidden");
-      document.getElementById("screen-history").classList.add("hidden");
-      btn.textContent = "📋 Lịch sử";
     }
+    if (name === "tinhTien") {
+      tinhVeDs();
+    }
+  }
+
+  function toggleHistory() {
+    showScreen(currentScreen === "xe" ? "history" : "xe");
+  }
+
+  function toggleTinhTien() {
+    showScreen(currentScreen === "tinhTien" ? "history" : "tinhTien");
+  }
+
+  // --- TÍNH TIỀN THEO SỐ CHUYẾN (NHẬP TAY, DÙNG SỐ THỰC TẾ CÔNG TY CHẤM) ---
+  var tinhLoaiHienTai = "xalan";
+  var tinhDs = doc("tinhDs") || []; // [{loai, soChuyen}] - danh sách các lượt đã cộng
+
+  function tinhVeTabs() {
+    document.querySelectorAll("#tinh-loai-tabs .loai-tab").forEach(function(btn){
+      btn.classList.toggle("active", tinhLoaiHienTai === btn.getAttribute("data-loai"));
+    });
+  }
+
+  function tinhCapNhatKetQua() {
+    var input = document.getElementById("tinh-input");
+    var box = document.getElementById("tinh-ket-qua-box");
+    var soChuyen = parseInt(input.value, 10);
+
+    if (isNaN(soChuyen) || soChuyen < 0) {
+      box.classList.add("hidden");
+      return;
+    }
+
+    var info = LOAI_INFO[tinhLoaiHienTai];
+    var soAnTien = Math.max(0, soChuyen - info.moc);
+    var thanhTien = tienCuaLoai(soChuyen, tinhLoaiHienTai);
+
+    document.getElementById("tinh-tong-chuyen").textContent = soChuyen + " chuyến";
+    document.getElementById("tinh-moc").textContent = info.moc > 0 ? (info.moc + " chuyến đầu") : "Không có";
+    document.getElementById("tinh-an-tien").textContent = soAnTien + " chuyến";
+    document.getElementById("tinh-thanh-tien").textContent = soAnTien > 0
+      ? (soAnTien + " x " + formatSo(info.donGia) + "đ = " + formatTien(thanhTien))
+      : "0đ";
+    box.classList.remove("hidden");
+  }
+
+  function tinhCongVaoTong() {
+    var input = document.getElementById("tinh-input");
+    var soChuyen = parseInt(input.value, 10);
+    if (isNaN(soChuyen) || soChuyen < 0) return;
+
+    tinhDs.push({ loai: tinhLoaiHienTai, soChuyen: soChuyen });
+    luu("tinhDs", tinhDs);
+
+    input.value = "";
+    document.getElementById("tinh-ket-qua-box").classList.add("hidden");
+    tinhVeDs();
+  }
+
+  function tinhXoaDong(idx) {
+    tinhDs.splice(idx, 1);
+    luu("tinhDs", tinhDs);
+    tinhVeDs();
+  }
+
+  function tinhXoaTatCa() {
+    tinhDs = [];
+    luu("tinhDs", tinhDs);
+    tinhVeDs();
+  }
+
+  function tinhVeDs() {
+    var dsBox = document.getElementById("tinh-ds-box");
+    var list = document.getElementById("tinh-ds-list");
+
+    if (tinhDs.length === 0) {
+      dsBox.classList.add("hidden");
+      list.innerHTML = "";
+      return;
+    }
+    dsBox.classList.remove("hidden");
+
+    var tong = 0;
+    list.innerHTML = tinhDs.map(function(dong, idx){
+      var info = LOAI_INFO[dong.loai];
+      var soAnTien = Math.max(0, dong.soChuyen - info.moc);
+      var thanhTien = tienCuaLoai(dong.soChuyen, dong.loai);
+      tong += thanhTien;
+      var chiTiet = soAnTien > 0
+        ? (soAnTien + "x" + formatSo(info.donGia) + "=" + formatTien(thanhTien))
+        : "0đ";
+      return '<div class="card card-row" style="margin-bottom:8px">'
+        +'<span class="kip-info">'+info.icon+' '+info.ten+' · '+dong.soChuyen+' chuyến ('+chiTiet+')</span>'
+        +'<button class="btn-danger" data-idx="'+idx+'">✕</button>'
+        +'</div>';
+    }).join("");
+
+    document.getElementById("tinh-tong-cong").textContent = formatTien(tong);
   }
 
   // --- GẮN SỰ KIỆN ---
   document.getElementById("header-date").textContent = getToday();
   document.getElementById("btn-toggle-history").addEventListener("click", toggleHistory);
+  document.getElementById("btn-toggle-tinh-tien").addEventListener("click", toggleTinhTien);
   document.getElementById("btn-bat-dau").addEventListener("click", batDauKip);
   document.getElementById("btn-them-chuyen").addEventListener("click", themChuyen);
-  document.querySelectorAll(".loai-tab").forEach(function(btn){
+  document.querySelectorAll("#loai-tabs .loai-tab").forEach(function(btn){
     btn.addEventListener("click", function(){
       if (!kip) return;
       kip.loaiHienTai = btn.getAttribute("data-loai");
@@ -645,10 +795,25 @@
       veXe();
     });
   });
+  document.querySelectorAll("#tinh-loai-tabs .loai-tab").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      tinhLoaiHienTai = btn.getAttribute("data-loai");
+      tinhVeTabs();
+      tinhCapNhatKetQua();
+    });
+  });
+  document.getElementById("tinh-input").addEventListener("input", tinhCapNhatKetQua);
+  document.getElementById("btn-tinh-cong").addEventListener("click", tinhCongVaoTong);
+  document.getElementById("btn-tinh-xoa-tat-ca").addEventListener("click", tinhXoaTatCa);
+  document.getElementById("tinh-ds-list").addEventListener("click", function(e){
+    var btn = e.target.closest("button[data-idx]");
+    if (!btn) return;
+    tinhXoaDong(parseInt(btn.getAttribute("data-idx"), 10));
+  });
+  tinhVeTabs();
   document.getElementById("btn-nham").addEventListener("click", xoaNham);
   document.getElementById("btn-ket-thuc").addEventListener("click", function(){
     document.getElementById("confirm-so").textContent = kip.chuyen.length;
-    document.getElementById("confirm-tien").textContent = formatTien(tinhTongTien(kip.chuyen));
     document.getElementById("confirm-box").classList.remove("hidden");
   });
   document.getElementById("btn-huy").addEventListener("click", function(){
