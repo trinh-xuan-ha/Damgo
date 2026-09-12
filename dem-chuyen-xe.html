@@ -84,9 +84,36 @@
     .confirm-box { margin-top: 20px; }
     .confirm-box p { text-align: center; margin-bottom: 12px; font-size: 14px; }
     .confirm-btns { display: flex; gap: 10px; }
+
+    /* --- LỊCH SỬ: SWIPE-TO-DELETE --- */
+    .hist-wrap {
+      position: relative;
+      border-radius: 14px;
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+    .hist-delete-bg {
+      position: absolute; top: 0; right: 0; bottom: 0; width: 72px;
+      background: #eb4d3d;
+      border-radius: 0 14px 14px 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .hist-delete-btn {
+      background: transparent; border: none; color: #fff; cursor: pointer;
+      height: 100%; width: 100%;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s;
+    }
+    .hist-delete-btn:active { background: rgba(0,0,0,0.15); }
+    .hist-delete-btn .icon {
+      font-size: 22px; line-height: 1;
+      filter: drop-shadow(0 1px 1px rgba(0,0,0,0.15));
+    }
     .hist-card {
-      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09);
-      border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; cursor: pointer;
+      background: #161b22; border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 14px; padding: 14px 16px; margin-bottom: 0; cursor: pointer;
+      position: relative; touch-action: pan-y; will-change: transform;
+      transform: translateX(0);
     }
     .hist-summary { display: flex; justify-content: space-between; align-items: center; }
     .hist-ngay { font-weight: 700; font-size: 15px; }
@@ -119,6 +146,51 @@
     .kip-info { font-size: 13px; color: #aaa; }
     .kip-info b { color: #fff; }
     .hidden { display: none !important; }
+
+    /* --- CHỌN NƠI CHẠY --- */
+    .loai-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+    .loai-tab {
+      flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px; color: #aaa; font-size: 12px; font-weight: 700;
+      padding: 10px 4px; cursor: pointer; text-align: center; line-height: 1.4;
+      transition: all 0.15s;
+    }
+    .loai-tab .loai-emoji { display: block; font-size: 16px; margin-bottom: 2px; }
+    .loai-tab.active[data-loai="xalan"] { background: linear-gradient(135deg,#00b894,#00cec9); color:#fff; border-color: transparent; }
+    .loai-tab.active[data-loai="ben1"] { background: linear-gradient(135deg,#fdcb6e,#e17055); color:#fff; border-color: transparent; }
+    .loai-tab.active[data-loai="cau7"] { background: linear-gradient(135deg,#a29bfe,#6c5ce7); color:#fff; border-color: transparent; }
+
+    /* --- TIỀN TẠM TÍNH --- */
+    .tien-row {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      font-size: 13px; color: #ccc; padding: 6px 0; gap: 10px;
+    }
+    .tien-row > span:last-child { display: flex; flex-direction: column; align-items: flex-end; }
+    .tien-row .tien-so { color: #fff; font-weight: 700; }
+    .tien-row .tien-moc { font-size: 11px; color: #888; margin-top: 2px; text-align: right; }
+    .tien-tong-row {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08);
+      font-size: 14px; font-weight: 700;
+    }
+    .tien-tong-row b { color: #00e5c9; font-size: 20px; }
+    .hist-tien { font-size: 13px; color: #00e5c9; font-weight: 700; margin-top: 4px; }
+    .detail-tien-box { margin-bottom: 12px; }
+
+    /* --- MODAL XÁC NHẬN XOÁ --- */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 200; padding: 24px;
+    }
+    .modal-box {
+      background: #161b22; border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 18px; padding: 26px 22px; width: 100%; max-width: 320px;
+      text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+    .modal-icon { font-size: 40px; margin-bottom: 10px; }
+    .modal-box p { font-size: 15px; margin-bottom: 6px; }
+    .modal-sub { font-size: 12px; color: #aaa; margin-bottom: 18px; }
   </style>
 </head>
 <body>
@@ -144,6 +216,11 @@
     <div class="card" style="margin-bottom:20px">
       <span class="kip-info">🕐 Bắt đầu: <b id="kip-bat-dau-text"></b></span>
     </div>
+    <div class="loai-tabs" id="loai-tabs">
+      <button class="loai-tab" data-loai="xalan"><span class="loai-emoji">⛴</span>Xà Lan</button>
+      <button class="loai-tab" data-loai="ben1"><span class="loai-emoji">🚢</span>Bến 1</button>
+      <button class="loai-tab" data-loai="cau7"><span class="loai-emoji">🌉</span>Cầu 7</button>
+    </div>
     <div class="so-chuyen">
       <div class="so-chuyen-label">SỐ CHUYẾN</div>
       <span class="so-chuyen-num" id="so-chuyen-num">0</span>
@@ -153,13 +230,18 @@
       <span class="kip-info">Chuyến cuối <b id="chuyen-cuoi-gio"></b></span>
       <button class="btn-danger" id="btn-nham">↩ Nhầm</button>
     </div>
+    <div class="card hidden" id="tien-box" style="margin-top:12px">
+      <div style="font-size:11px;color:#888;letter-spacing:1px;margin-bottom:8px">TIỀN TẠM TÍNH</div>
+      <div id="tien-breakdown"></div>
+      <div class="tien-tong-row"><span>Tổng cộng</span><b id="tien-tong">0đ</b></div>
+    </div>
     <div class="card hidden" id="chi-tiet-box" style="margin-top:12px;max-height:130px;overflow-y:auto">
       <div style="font-size:11px;color:#888;letter-spacing:1px;margin-bottom:8px">CHI TIẾT</div>
       <div class="tags-wrap" id="chi-tiet-tags"></div>
     </div>
     <button class="btn-ghost" id="btn-ket-thuc">⏹ Kết Thúc Kíp</button>
     <div class="card confirm-box hidden" id="confirm-box">
-      <p>Kết thúc kíp với <b id="confirm-so" style="color:#fdcb6e"></b> chuyến?</p>
+      <p>Kết thúc kíp với <b id="confirm-so" style="color:#fdcb6e"></b> chuyến, tổng <b id="confirm-tien" style="color:#00e5c9"></b>?</p>
       <div class="confirm-btns">
         <button class="btn-confirm-no" id="btn-huy">Huỷ</button>
         <button class="btn-confirm-yes" id="btn-xac-nhan">✅ Xác nhận</button>
@@ -174,12 +256,95 @@
   <div id="history-list"></div>
 </div>
 
+<!-- MODAL XÁC NHẬN XOÁ KÍP -->
+<div id="delete-modal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <div class="modal-icon">🗑️</div>
+    <p>Xoá kíp ngày <b id="modal-ngay" style="color:#ff7675"></b>?</p>
+    <div class="modal-sub">Hành động này không thể hoàn tác.</div>
+    <div class="confirm-btns">
+      <button class="btn-confirm-no" id="btn-modal-huy">Huỷ</button>
+      <button class="btn-confirm-yes" id="btn-modal-xoa">🗑 Xoá</button>
+    </div>
+  </div>
+</div>
+
 <script>
 (function() {
   var kip = null;
   var lichSu = [];
   var showingHistory = false;
   var expandedIdx = null;
+
+  // --- SWIPE-TO-DELETE STATE ---
+  var openSwipeIdx = null;
+  var deleteIdx = null;
+  var SWIPE_WIDTH = 72;
+
+  // --- CẤU HÌNH TÍNH TIỀN THEO NƠI CHẠY ---
+  // moc: số chuyến KHÔNG tính tiền trước khi bắt đầu ăn tiền (ví dụ moc=15 nghĩa là
+  // chuyến 1-15 = 0đ, chuyến thứ 16 trở đi mỗi chuyến mới được tính donGia)
+  var LOAI_INFO = {
+    xalan: { ten: "Xà Lan", icon: "⛴", donGia: 10000, moc: 0 },
+    ben1:  { ten: "Bến 1",  icon: "🚢", donGia: 30000, moc: 15 },
+    cau7:  { ten: "Cầu 7",  icon: "🌉", donGia: 20000, moc: 17 },
+    khac:  { ten: "Chưa phân loại", icon: "❓", donGia: 0, moc: 0 }
+  };
+
+  function getGio(c) { return (c && typeof c === "object") ? c.gio : c; }
+  function getLoai(c) { return (c && typeof c === "object" && c.loai) ? c.loai : "khac"; }
+
+  function formatTien(n) {
+    return n.toLocaleString("vi-VN") + "đ";
+  }
+
+  function demTheoLoai(chuyenArr) {
+    var dem = {};
+    chuyenArr.forEach(function(c) {
+      var loai = getLoai(c);
+      dem[loai] = (dem[loai] || 0) + 1;
+    });
+    return dem;
+  }
+
+  function tienCuaLoai(soChuyen, loaiKey) {
+    var info = LOAI_INFO[loaiKey];
+    if (!info) return 0;
+    var soChuyenAnTien = Math.max(0, soChuyen - info.moc);
+    return soChuyenAnTien * info.donGia;
+  }
+
+  function tinhTongTien(chuyenArr) {
+    var dem = demTheoLoai(chuyenArr);
+    var tong = 0;
+    Object.keys(dem).forEach(function(loai) {
+      tong += tienCuaLoai(dem[loai], loai);
+    });
+    return tong;
+  }
+
+  function formatSo(n) {
+    return n.toLocaleString("vi-VN");
+  }
+
+  function buildTienRow(loai, soCT, dangChay) {
+    var info = LOAI_INFO[loai];
+    var soChuyenAnTien = Math.max(0, soCT - info.moc);
+    var tien = soChuyenAnTien * info.donGia;
+    var phai;
+    if (soChuyenAnTien > 0) {
+      phai = '<span class="tien-so">'+soChuyenAnTien+'x'+formatSo(info.donGia)+'='+formatSo(tien)+'đ</span>';
+    } else if (info.moc > 0) {
+      var ghiChu = dangChay
+        ? 'còn '+(info.moc - soCT + 1)+' chuyến nữa mới đạt mốc (chuyến '+(info.moc+1)+')'
+        : 'chưa đạt mốc chuyến '+(info.moc+1);
+      phai = '<span class="tien-so">0đ</span><span class="tien-moc">'+ghiChu+'</span>';
+    } else {
+      phai = '<span class="tien-so">'+soCT+'x'+formatSo(info.donGia)+'='+formatSo(tien)+'đ</span>';
+    }
+    return '<div class="tien-row"><span>'+info.icon+' '+info.ten+' ('+soCT+' chuyến)</span>'
+      +'<span style="text-align:right">'+phai+'</span></div>';
+  }
 
   // --- STORAGE AN TOÀN ---
   function luu(key, val) {
@@ -216,13 +381,14 @@
 
   // --- ACTIONS ---
   function batDauKip() {
-    kip = { ngay: getToday(), batDau: getNow(), chuyen: [] };
+    kip = { ngay: getToday(), batDau: getNow(), chuyen: [], loaiHienTai: "xalan" };
     luu("kip", kip);
     veXe();
   }
 
   function themChuyen() {
-    kip.chuyen.push(getNow());
+    var loai = kip.loaiHienTai || "xalan";
+    kip.chuyen.push({ gio: getNow(), loai: loai });
     luu("kip", kip);
     var el = document.getElementById("so-chuyen-num");
     el.classList.add("pulse");
@@ -259,58 +425,95 @@
       document.getElementById("kip-bat-dau-text").textContent = kip.batDau;
       document.getElementById("so-chuyen-num").textContent = kip.chuyen.length;
 
+      document.querySelectorAll(".loai-tab").forEach(function(btn){
+        btn.classList.toggle("active", (kip.loaiHienTai || "xalan") === btn.getAttribute("data-loai"));
+      });
+
       var cuoiBox = document.getElementById("chuyen-cuoi-box");
       var chiTietBox = document.getElementById("chi-tiet-box");
+      var tienBox = document.getElementById("tien-box");
 
       if (kip.chuyen.length > 0) {
         cuoiBox.classList.remove("hidden");
-        document.getElementById("chuyen-cuoi-gio").textContent = kip.chuyen[kip.chuyen.length-1];
+        var cuoi = kip.chuyen[kip.chuyen.length-1];
+        document.getElementById("chuyen-cuoi-gio").textContent = LOAI_INFO[getLoai(cuoi)].icon + " " + getGio(cuoi);
         chiTietBox.classList.remove("hidden");
-        document.getElementById("chi-tiet-tags").innerHTML = kip.chuyen.map(function(t,i){
-          return '<span class="tag">#'+(i+1)+' '+t+'</span>';
+        document.getElementById("chi-tiet-tags").innerHTML = kip.chuyen.map(function(c,i){
+          return '<span class="tag">'+LOAI_INFO[getLoai(c)].icon+' #'+(i+1)+' '+getGio(c)+'</span>';
         }).join("");
+
+        tienBox.classList.remove("hidden");
+        var dem = demTheoLoai(kip.chuyen);
+        var rows = "";
+        Object.keys(dem).forEach(function(loai){
+          rows += buildTienRow(loai, dem[loai], true);
+        });
+        document.getElementById("tien-breakdown").innerHTML = rows;
+        document.getElementById("tien-tong").textContent = formatTien(tinhTongTien(kip.chuyen));
       } else {
         cuoiBox.classList.add("hidden");
         chiTietBox.classList.add("hidden");
+        tienBox.classList.add("hidden");
       }
     }
   }
 
   function veLichSu() {
     var el = document.getElementById("history-list");
+    openSwipeIdx = null;
+
     if (lichSu.length === 0) {
       el.innerHTML = '<div class="empty">Chưa có kíp nào hoàn thành</div>';
       return;
     }
     el.innerHTML = lichSu.map(function(k, i) {
-      var chi = k.chuyen.map(function(t, j) {
+      var chi = k.chuyen.map(function(c, j) {
         var diff = "";
         if (j > 0) {
-          var d = diffPhut(k.chuyen[j-1], t);
+          var d = diffPhut(getGio(k.chuyen[j-1]), getGio(c));
           if (d > 0) diff = '<div class="detail-diff">+'+d+' phút từ chuyến trước</div>';
         }
+        var info = LOAI_INFO[getLoai(c)];
         return '<div class="detail-item">'
           +'<div class="detail-num">'+(j+1)+'</div>'
-          +'<div><div class="detail-time">🕐 '+t+'</div>'+diff+'</div>'
+          +'<div><div class="detail-time">'+info.icon+' '+getGio(c)+' · '+info.ten+'</div>'+diff+'</div>'
           +'</div>';
       }).join("");
 
-      return '<div class="hist-card" id="hcard-'+i+'">'
+      var dem = demTheoLoai(k.chuyen);
+      var tienRows = "";
+      Object.keys(dem).forEach(function(loai){
+        tienRows += buildTienRow(loai, dem[loai], false);
+      });
+      var tongTien = tinhTongTien(k.chuyen);
+
+      return '<div class="hist-wrap">'
+        +'<div class="hist-delete-bg">'
+        +'<button class="hist-delete-btn" id="hdel-'+i+'"><span class="icon">🗑</span></button>'
+        +'</div>'
+        +'<div class="hist-card" id="hcard-'+i+'">'
         +'<div class="hist-summary">'
         +'<div><div class="hist-ngay">📅 '+k.ngay+'</div>'
-        +'<div class="hist-time">🕐 '+k.batDau+' → '+(k.ketThuc||'?')+'</div></div>'
+        +'<div class="hist-time">🕐 '+k.batDau+' → '+(k.ketThuc||'?')+'</div>'
+        +'<div class="hist-tien">💰 '+formatTien(tongTien)+'</div></div>'
         +'<div style="display:flex;align-items:center">'
         +'<div><div class="hist-count">'+k.chuyen.length+'</div><div class="hist-count-label">chuyến</div></div>'
         +'<span class="hist-arrow" id="harrow-'+i+'">⌄</span>'
         +'</div></div>'
         +'<div class="hist-detail" id="hdetail-'+i+'">'
+        +'<div class="detail-tien-box">'
+        +'<div class="detail-label">TIỀN THEO NƠI CHẠY</div>'
+        +tienRows
+        +'</div>'
         +'<div class="detail-label">CHI TIẾT TỪNG CHUYẾN</div>'
-        +chi+'</div></div>';
+        +chi+'</div></div></div>';
     }).join("");
 
     lichSu.forEach(function(k, i) {
-      document.getElementById("hcard-"+i).addEventListener("click", function(){
-        moRong(i);
+      attachSwipe(i);
+      document.getElementById("hdel-"+i).addEventListener("click", function(e){
+        e.stopPropagation();
+        requestDelete(i);
       });
     });
   }
@@ -335,6 +538,84 @@
     }
   }
 
+  // --- SWIPE-TO-DELETE LOGIC ---
+  function attachSwipe(i) {
+    var card = document.getElementById("hcard-"+i);
+    if (!card) return;
+    var startX = 0, current = 0, dragging = false, moved = false;
+
+    function setTranslate(x, animate) {
+      card.style.transition = animate ? "transform 0.22s cubic-bezier(0.22, 1, 0.36, 1)" : "none";
+      card.style.transform = "translateX(" + x + "px)";
+      current = x;
+    }
+
+    function pointX(e) {
+      if (e.touches && e.touches.length) return e.touches[0].clientX;
+      if (e.changedTouches && e.changedTouches.length) return e.changedTouches[0].clientX;
+      return e.clientX;
+    }
+
+    function onDown(e) {
+      if (expandedIdx === i) { dragging = false; return; } // đang xem chi tiết: không cho vuốt xoá
+      dragging = true;
+      moved = false;
+      startX = pointX(e);
+      card.style.transition = "none";
+    }
+
+    function onMove(e) {
+      if (!dragging) return;
+      var dx = pointX(e) - startX;
+      if (Math.abs(dx) > 6) moved = true;
+      var next = dx;
+      if (next > 0) next = 0;
+      if (next < -SWIPE_WIDTH) next = -SWIPE_WIDTH + (next + SWIPE_WIDTH) * 0.15;
+      setTranslate(next, false);
+    }
+
+    function onUp() {
+      if (!dragging) return;
+      dragging = false;
+      var shouldDelete = current < -SWIPE_WIDTH / 2;
+      setTranslate(0, true);
+      if (shouldDelete) requestDelete(i); // vuốt hết cỡ = tương đương bấm nút xoá
+    }
+
+    card.addEventListener("touchstart", onDown, { passive: true });
+    card.addEventListener("touchmove", onMove, { passive: true });
+    card.addEventListener("touchend", onUp);
+    card.addEventListener("touchcancel", onUp);
+
+    card.addEventListener("mousedown", onDown);
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
+
+    card.addEventListener("click", function() {
+      if (moved) { moved = false; return; }
+      moRong(i);
+    });
+  }
+
+  // --- XÁC NHẬN XOÁ ---
+  function requestDelete(i) {
+    deleteIdx = i;
+    document.getElementById("modal-ngay").textContent = lichSu[i].ngay;
+    document.getElementById("delete-modal").classList.remove("hidden");
+  }
+  function closeModal() {
+    document.getElementById("delete-modal").classList.add("hidden");
+    deleteIdx = null;
+  }
+  function confirmDelete() {
+    if (deleteIdx === null) return;
+    lichSu.splice(deleteIdx, 1);
+    luu("lichSu", lichSu);
+    closeModal();
+    expandedIdx = null;
+    veLichSu();
+  }
+
   function toggleHistory() {
     showingHistory = !showingHistory;
     var btn = document.getElementById("btn-toggle-history");
@@ -356,15 +637,26 @@
   document.getElementById("btn-toggle-history").addEventListener("click", toggleHistory);
   document.getElementById("btn-bat-dau").addEventListener("click", batDauKip);
   document.getElementById("btn-them-chuyen").addEventListener("click", themChuyen);
+  document.querySelectorAll(".loai-tab").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      if (!kip) return;
+      kip.loaiHienTai = btn.getAttribute("data-loai");
+      luu("kip", kip);
+      veXe();
+    });
+  });
   document.getElementById("btn-nham").addEventListener("click", xoaNham);
   document.getElementById("btn-ket-thuc").addEventListener("click", function(){
     document.getElementById("confirm-so").textContent = kip.chuyen.length;
+    document.getElementById("confirm-tien").textContent = formatTien(tinhTongTien(kip.chuyen));
     document.getElementById("confirm-box").classList.remove("hidden");
   });
   document.getElementById("btn-huy").addEventListener("click", function(){
     document.getElementById("confirm-box").classList.add("hidden");
   });
   document.getElementById("btn-xac-nhan").addEventListener("click", ketThuc);
+  document.getElementById("btn-modal-huy").addEventListener("click", closeModal);
+  document.getElementById("btn-modal-xoa").addEventListener("click", confirmDelete);
 
   // --- KHỞI ĐỘNG ---
   khoiDong();
