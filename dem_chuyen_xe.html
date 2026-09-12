@@ -215,8 +215,8 @@
     <div class="header-date" id="header-date"></div>
   </div>
   <div style="display:flex; gap:8px">
-    <button class="btn-small hidden" id="btn-toggle-tinh-tien">🧮 Tính tiền</button>
-    <button class="btn-small" id="btn-toggle-history">📋 Lịch sử</button>
+    <button type="button" class="btn-small hidden" id="btn-toggle-tinh-tien">🧮 Tính tiền</button>
+    <button type="button" class="btn-small" id="btn-toggle-history">📋 Lịch sử</button>
   </div>
 </div>
 
@@ -226,7 +226,7 @@
     <div class="emoji-big">🚛</div>
     <h2>Chưa có kíp nào</h2>
     <p>Bấm bắt đầu khi bắt đầu kíp làm việc</p>
-    <button class="btn-green" id="btn-bat-dau">▶ Bắt Đầu Kíp</button>
+    <button type="button" class="btn-green" id="btn-bat-dau">▶ Bắt Đầu Kíp</button>
   </div>
 
   <div id="view-trong-kip" class="hidden">
@@ -234,24 +234,24 @@
       <span class="kip-info">🕐 Bắt đầu: <b id="kip-bat-dau-text"></b></span>
     </div>
     <div class="loai-tabs" id="loai-tabs">
-      <button class="loai-tab" data-loai="xalan"><span class="loai-emoji">⛴</span>Xà Lan</button>
-      <button class="loai-tab" data-loai="ben1"><span class="loai-emoji">🚢</span>Bến 1</button>
-      <button class="loai-tab" data-loai="cau7"><span class="loai-emoji">🌉</span>Cầu 7</button>
+      <button type="button" class="loai-tab" data-loai="xalan"><span class="loai-emoji">⛴</span>Xà Lan</button>
+      <button type="button" class="loai-tab" data-loai="ben1"><span class="loai-emoji">🚢</span>Bến 1</button>
+      <button type="button" class="loai-tab" data-loai="cau7"><span class="loai-emoji">🌉</span>Cầu 7</button>
     </div>
     <div class="so-chuyen">
       <div class="so-chuyen-label">SỐ CHUYẾN</div>
       <span class="so-chuyen-num" id="so-chuyen-num">0</span>
     </div>
-    <button class="btn-big" id="btn-them-chuyen">+ THÊM CHUYẾN</button>
+    <button type="button" class="btn-big" id="btn-them-chuyen">+ THÊM CHUYẾN</button>
     <div class="card card-row hidden" id="chuyen-cuoi-box" style="margin-top:14px">
       <span class="kip-info">Chuyến cuối <b id="chuyen-cuoi-gio"></b></span>
-      <button class="btn-danger" id="btn-nham">↩ Nhầm</button>
+      <button type="button" class="btn-danger" id="btn-nham">↩ Nhầm</button>
     </div>
     <div class="card hidden" id="chi-tiet-box" style="margin-top:12px;max-height:130px;overflow-y:auto">
       <div style="font-size:11px;color:#888;letter-spacing:1px;margin-bottom:8px">CHI TIẾT</div>
       <div class="tags-wrap" id="chi-tiet-tags"></div>
     </div>
-    <button class="btn-ghost" id="btn-ket-thuc">⏹ Kết Thúc Kíp</button>
+    <button type="button" class="btn-ghost" id="btn-ket-thuc">⏹ Kết Thúc Kíp</button>
   </div>
 </div>
 
@@ -262,8 +262,8 @@
     <p>Kết thúc kíp với <b id="confirm-so" style="color:#fdcb6e"></b> chuyến?</p>
     <div class="modal-sub">Kíp sẽ được lưu vào lịch sử.</div>
     <div class="confirm-btns">
-      <button class="btn-confirm-no" id="btn-huy">Huỷ</button>
-      <button class="btn-confirm-yes" id="btn-xac-nhan">✅ Xác nhận</button>
+      <button type="button" class="btn-confirm-no" id="btn-huy">Huỷ</button>
+      <button type="button" class="btn-confirm-yes" id="btn-xac-nhan">✅ Xác nhận</button>
     </div>
   </div>
 </div>
@@ -278,9 +278,9 @@
 <div id="screen-tinh-tien" class="body hidden">
   <div style="font-size:16px;font-weight:700;margin-bottom:16px">🧮 Tính tiền theo số chuyến</div>
   <div class="loai-tabs" id="tinh-loai-tabs">
-    <button class="loai-tab" data-loai="xalan"><span class="loai-emoji">⛴</span>Xà Lan</button>
-    <button class="loai-tab" data-loai="ben1"><span class="loai-emoji">🚢</span>Bến 1</button>
-    <button class="loai-tab" data-loai="cau7"><span class="loai-emoji">🌉</span>Cầu 7</button>
+    <button type="button" class="loai-tab" data-loai="xalan"><span class="loai-emoji">⛴</span>Xà Lan</button>
+    <button type="button" class="loai-tab" data-loai="ben1"><span class="loai-emoji">🚢</span>Bến 1</button>
+    <button type="button" class="loai-tab" data-loai="cau7"><span class="loai-emoji">🌉</span>Cầu 7</button>
   </div>
   <div class="card" style="margin-bottom:12px">
     <div style="font-size:11px;color:#888;letter-spacing:1px;margin-bottom:10px">SỐ CHUYẾN (theo công ty chấm)</div>
@@ -291,13 +291,13 @@
     <div class="tien-row"><span>Mốc miễn phí</span><span class="tien-so" id="tinh-moc">0</span></div>
     <div class="tien-row"><span>Số chuyến ăn tiền</span><span class="tien-so" id="tinh-an-tien">0</span></div>
     <div class="tien-tong-row"><span>Thành tiền</span><b id="tinh-thanh-tien">0đ</b></div>
-    <button class="btn-ghost" id="btn-tinh-cong" style="margin-top:14px">+ Cộng vào tổng</button>
+    <button type="button" class="btn-ghost" id="btn-tinh-cong" style="margin-top:14px">+ Cộng vào tổng</button>
   </div>
 
   <div id="tinh-ds-box" class="hidden">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
       <div style="font-size:11px;color:#888;letter-spacing:1px">ĐÃ CỘNG</div>
-      <button class="btn-danger" id="btn-tinh-xoa-tat-ca">Xoá tất cả</button>
+      <button type="button" class="btn-danger" id="btn-tinh-xoa-tat-ca">Xoá tất cả</button>
     </div>
     <div id="tinh-ds-list"></div>
     <div class="card" style="margin-top:4px">
@@ -316,8 +316,8 @@
     <p>Xoá kíp ngày <b id="modal-ngay" style="color:#ff7675"></b>?</p>
     <div class="modal-sub">Hành động này không thể hoàn tác.</div>
     <div class="confirm-btns">
-      <button class="btn-confirm-no" id="btn-modal-huy">Huỷ</button>
-      <button class="btn-confirm-yes" id="btn-modal-xoa">🗑 Xoá</button>
+      <button type="button" class="btn-confirm-no" id="btn-modal-huy">Huỷ</button>
+      <button type="button" class="btn-confirm-yes" id="btn-modal-xoa">🗑 Xoá</button>
     </div>
   </div>
 </div>
@@ -516,7 +516,7 @@
 
       return '<div class="hist-wrap">'
         +'<div class="hist-delete-bg">'
-        +'<button class="hist-delete-btn" id="hdel-'+i+'"><span class="icon">🗑</span></button>'
+        +'<button type="button" class="hist-delete-btn" id="hdel-'+i+'"><span class="icon">🗑</span></button>'
         +'</div>'
         +'<div class="hist-card" id="hcard-'+i+'">'
         +'<div class="hist-summary">'
@@ -533,8 +533,13 @@
 
     lichSu.forEach(function(k, i) {
       attachSwipe(i);
-      document.getElementById("hdel-"+i).addEventListener("click", function(e){
+      document.getElementById("hdel-"+i).addEventListener("pointerdown", function(e){
+        e.preventDefault();
         e.stopPropagation();
+      });
+      document.getElementById("hdel-"+i).addEventListener("click", function(e){
+        e.preventDefault();
+        e.stopImmediatePropagation();
         requestDelete(i);
       });
     });
@@ -774,7 +779,7 @@
         : "0đ";
       return '<div class="card card-row" style="margin-bottom:8px">'
         +'<span class="kip-info">'+info.icon+' '+info.ten+' · '+dong.soChuyen+' chuyến ('+chiTiet+')</span>'
-        +'<button class="btn-danger" data-idx="'+idx+'">✕</button>'
+        +'<button type="button" class="btn-danger" data-idx="'+idx+'">✕</button>'
         +'</div>';
     }).join("");
 
@@ -816,12 +821,34 @@
     document.getElementById("confirm-so").textContent = kip.chuyen.length;
     document.getElementById("confirm-box").classList.remove("hidden");
   });
-  document.getElementById("btn-huy").addEventListener("click", function(){
+  // Các nút modal dùng pointerup để phản hồi ngay ở cả chuột, Android và iPhone.
+  // Chặn click tổng hợp sau pointerup để một lần chạm chỉ chạy đúng một lần.
+  function bindModalAction(id, action) {
+    var el = document.getElementById(id);
+    var handledPointer = false;
+    el.addEventListener("pointerup", function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      handledPointer = true;
+      action();
+      setTimeout(function(){ handledPointer = false; }, 500);
+    });
+    el.addEventListener("click", function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (handledPointer) {
+        handledPointer = false;
+        return;
+      }
+      action();
+    });
+  }
+  bindModalAction("btn-huy", function(){
     document.getElementById("confirm-box").classList.add("hidden");
   });
-  document.getElementById("btn-xac-nhan").addEventListener("click", ketThuc);
-  document.getElementById("btn-modal-huy").addEventListener("click", closeModal);
-  document.getElementById("btn-modal-xoa").addEventListener("click", confirmDelete);
+  bindModalAction("btn-xac-nhan", ketThuc);
+  bindModalAction("btn-modal-huy", closeModal);
+  bindModalAction("btn-modal-xoa", confirmDelete);
 
   // --- KHỞI ĐỘNG ---
   khoiDong();
